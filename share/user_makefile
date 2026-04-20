@@ -1,0 +1,32 @@
+CC ?= gcc
+CFLAGS ?= -Wall -Wextra -std=c99
+CPPFLAGS ?= -I./listandtree
+LDFLAGS ?=
+LIB_DIR ?= ./listandtree
+LIB_TARGET := $(LIB_DIR)/liblistandtree.a
+USER_SRCS := $(filter-out $(LIB_DIR)/%,$(wildcard *.c))
+SRC ?= $(firstword $(USER_SRCS))
+
+ifeq ($(strip $(SRC)),)
+$(error 当前目录没有可编译的 .c 文件，请先创建 test01.c，或执行 make SRC=your_file.c run)
+endif
+
+OUT ?= $(basename $(notdir $(SRC)))
+
+.PHONY: all run clean library
+
+all: $(OUT)
+
+library: $(LIB_TARGET)
+
+$(LIB_TARGET):
+	$(MAKE) -C $(LIB_DIR)
+
+$(OUT): $(SRC) $(LIB_TARGET)
+	$(CC) $(CFLAGS) $(CPPFLAGS) $< $(LIB_TARGET) $(LDFLAGS) -o $@
+
+run: $(OUT)
+	./$(OUT)
+
+clean:
+	rm -f $(OUT)
