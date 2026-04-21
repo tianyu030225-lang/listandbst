@@ -9,8 +9,6 @@
 - 开发版实验室 `bin/listandtree_lab`
 - 分享版导出器 `dist/listandtree.out`
 
-这次调整的重点不是继续扩展容器式接口，而是把整个 4.0 工程回切到你在 `myproject01` 中已经写好的原始 API 体系。
-
 ## 2. 当前公开接口
 
 公开头文件已经切换为：
