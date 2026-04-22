@@ -194,4 +194,5 @@ make SRC=demo.c OUT=demo run
 - `make` / `make run` 只操作开发版
 - `make share` 才会生成分享用的 `listandtree.out`
 - `make share-check` 会校验分享版导出目录不含源码且可正常链接 API
+- `dist/` 是构建输出目录，不再作为源码仓库的一部分提交
 - `README02.md` 记录当前版本的实现说明
