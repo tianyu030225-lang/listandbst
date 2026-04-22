@@ -7,6 +7,7 @@
 
 #include "api_catalog.h"
 #include "listandtree.h"
+#include "runtime_store.h"
 #include "show.h"
 
 #define STRUCTURE_COUNT 5U
@@ -23,6 +24,60 @@ static void show_messagef(UiTone tone, const char *format, ...)
     va_end(args);
 
     ui_show_message(stdout, tone, buffer);
+}
+
+static void show_load_report(const RuntimeStateReport *report)
+{
+    if (report == NULL)
+    {
+        return;
+    }
+
+    if (report->had_error)
+    {
+        show_messagef(UI_TONE_WARNING,
+                      "本地数据加载完成，但存在异常: 已载入 %zu 条数据，跳过 %zu 行。",
+                      report->values_loaded,
+                      report->skipped_lines);
+        return;
+    }
+
+    if (report->values_loaded == 0U && report->files_missing == 5U)
+    {
+        ui_show_message(stdout, UI_TONE_INFO, "未发现历史数据，本次从空结构开始。");
+        return;
+    }
+
+    show_messagef(UI_TONE_SUCCESS,
+                  "本地数据已恢复: 读取 %zu 个文件，共载入 %zu 条数据。",
+                  report->files_loaded,
+                  report->values_loaded);
+    if (report->skipped_lines > 0U)
+    {
+        show_messagef(UI_TONE_WARNING, "持久化文件里有 %zu 行无效数据已被跳过。", report->skipped_lines);
+    }
+}
+
+static void show_save_report(const RuntimeStateReport *report)
+{
+    if (report == NULL)
+    {
+        return;
+    }
+
+    if (report->had_error)
+    {
+        show_messagef(UI_TONE_ERROR,
+                      "退出前保存失败: 已尝试写入 %zu 个文件，成功保存 %zu 条数据。",
+                      report->files_saved,
+                      report->values_saved);
+        return;
+    }
+
+    show_messagef(UI_TONE_SUCCESS,
+                  "退出前已保存本地数据: 写入 %zu 个文件，共 %zu 条数据。",
+                  report->files_saved,
+                  report->values_saved);
 }
 
 static bool read_line(char *buffer, size_t size)
@@ -158,9 +213,10 @@ static void run_bootstrap_sequence(void)
         "tests/test_lists.c",
         "tests/test_bst.c",
         "tests/test_algorithms.c",
-        "share/export_makefile",
+        "tests/test_runtime_store.c",
         "share/user_makefile",
-        "tools/build_share_assets.py"};
+        "tools/build_share_assets.py",
+        "tests/test_share_export.sh"};
     size_t header_ready;
     size_t support_ready;
     bool bootstrap_ready;
@@ -175,10 +231,17 @@ static void run_bootstrap_sequence(void)
     ui_show_welcome();
 }
 
-static void show_slist_demo(void)
+static void show_slist_demo(RuntimeState *state)
 {
-    ListNode *head = NULL;
+    ListNode *head;
     int choice;
+
+    if (state == NULL)
+    {
+        return;
+    }
+
+    head = state->slist;
 
     while (true)
     {
@@ -354,16 +417,20 @@ static void show_slist_demo(void)
         wait_for_operation();
     }
 
-    if (head != NULL)
-    {
-        (void)del_all_node_slist(&head);
-    }
+    state->slist = head;
 }
 
-static void show_slist_while_demo(void)
+static void show_slist_while_demo(RuntimeState *state)
 {
-    SListWhileNode *head = NULL;
+    SListWhileNode *head;
     int choice;
+
+    if (state == NULL)
+    {
+        return;
+    }
+
+    head = state->slist_while;
 
     while (true)
     {
@@ -539,16 +606,20 @@ static void show_slist_while_demo(void)
         wait_for_operation();
     }
 
-    if (head != NULL)
-    {
-        (void)del_all_node_slist_while(&head);
-    }
+    state->slist_while = head;
 }
 
-static void show_dlist_demo(void)
+static void show_dlist_demo(RuntimeState *state)
 {
-    DListNode *head = NULL;
+    DListNode *head;
     int choice;
+
+    if (state == NULL)
+    {
+        return;
+    }
+
+    head = state->dlist;
 
     while (true)
     {
@@ -724,16 +795,20 @@ static void show_dlist_demo(void)
         wait_for_operation();
     }
 
-    if (head != NULL)
-    {
-        (void)del_all_node_dlist(&head);
-    }
+    state->dlist = head;
 }
 
-static void show_dlist_while_demo(void)
+static void show_dlist_while_demo(RuntimeState *state)
 {
-    DListWhileNode *head = NULL;
+    DListWhileNode *head;
     int choice;
+
+    if (state == NULL)
+    {
+        return;
+    }
+
+    head = state->dlist_while;
 
     while (true)
     {
@@ -909,16 +984,20 @@ static void show_dlist_while_demo(void)
         wait_for_operation();
     }
 
-    if (head != NULL)
-    {
-        (void)del_all_node_dlist_while(&head);
-    }
+    state->dlist_while = head;
 }
 
-static void show_tree_bst_demo(void)
+static void show_tree_bst_demo(RuntimeState *state)
 {
-    BSTNode *root = NULL;
+    BSTNode *root;
     int choice;
+
+    if (state == NULL)
+    {
+        return;
+    }
+
+    root = state->tree_bst;
 
     while (true)
     {
@@ -1069,10 +1148,7 @@ static void show_tree_bst_demo(void)
         wait_for_operation();
     }
 
-    if (root != NULL)
-    {
-        (void)del_all_node_tree_bst(&root);
-    }
+    state->tree_bst = root;
 }
 
 static void show_paixu_search_demo(void)
@@ -1167,6 +1243,7 @@ static void show_build_and_test(void)
     page_linef("  make");
     page_linef("  make run");
     page_linef("  make test");
+    page_linef("  make share-check");
     page_linef("  make valgrind");
     page_linef("  make clean");
     page_linef("");
@@ -1177,10 +1254,12 @@ static void show_build_and_test(void)
     page_linef("  - tests/test_lists.c");
     page_linef("  - tests/test_bst.c");
     page_linef("  - tests/test_algorithms.c");
+    page_linef("  - tests/test_runtime_store.c");
     page_linef("");
     page_linef("分享版输出");
     page_linef("  - dist/listandtree.out");
     page_linef("  - 运行后在当前目录生成 listandtree/、README.md 和根 Makefile");
+    page_linef("  - listandtree/ 内只包含公开头文件和 liblistandtree.a");
 }
 
 static void show_project_layout(void)
@@ -1192,23 +1271,28 @@ static void show_project_layout(void)
 
     page_linef("开发版目录");
     page_linef("  - include/: slist.h、slist_while.h、dlist.h、dlist_while.h、tree_bst.h、paixu_search.h、listandtree.h、show.h");
-    page_linef("  - src/: main.c、share_main.c、show.c、四种链表实现、tree_bst.c、paixu_search.c、api_catalog");
-    page_linef("  - tests/: list、BST、算法测试");
+    page_linef("  - src/: main.c、share_main.c、show.c、runtime_store、四种链表实现、tree_bst.c、paixu_search.c、api_catalog");
+    page_linef("  - tests/: list、BST、算法、持久化与分享导出验证");
     page_linef("");
     page_linef("分享版支撑文件");
-    page_linef("  - share/export_makefile");
     page_linef("  - share/user_makefile");
     page_linef("  - tools/build_share_assets.py");
     page_linef("  - dist/listandtree.out");
     page_linef("");
-    page_linef("导出目录继续保持平铺，便于用户直接 include 和 make。");
+    page_linef("导出目录继续保持平铺，便于用户直接 include 并链接预编译静态库。");
 }
 
 static int run_list_lab(void)
 {
+    RuntimeState state;
+    RuntimeStateReport report;
     int choice;
+    int exit_code = EXIT_SUCCESS;
 
+    runtime_state_init(&state);
     run_bootstrap_sequence();
+    (void)runtime_state_load(&state, &report);
+    show_load_report(&report);
 
     while (true)
     {
@@ -1227,30 +1311,36 @@ static int run_list_lab(void)
 
         if (choice == 0)
         {
+            if (!runtime_state_save(&state, &report))
+            {
+                exit_code = EXIT_FAILURE;
+            }
+            show_save_report(&report);
+            runtime_state_destroy(&state);
             ui_show_shutdown();
-            return EXIT_SUCCESS;
+            return exit_code;
         }
 
         switch (choice)
         {
         case 1:
-            show_slist_demo();
+            show_slist_demo(&state);
             pause_after_page = false;
             break;
         case 2:
-            show_slist_while_demo();
+            show_slist_while_demo(&state);
             pause_after_page = false;
             break;
         case 3:
-            show_dlist_demo();
+            show_dlist_demo(&state);
             pause_after_page = false;
             break;
         case 4:
-            show_dlist_while_demo();
+            show_dlist_while_demo(&state);
             pause_after_page = false;
             break;
         case 5:
-            show_tree_bst_demo();
+            show_tree_bst_demo(&state);
             pause_after_page = false;
             break;
         case 6:

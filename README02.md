@@ -9,6 +9,10 @@
 - 开发版实验室 `bin/listandtree_lab`
 - 分享版导出器 `dist/listandtree.out`
 
+开发版额外会维护本地运行态目录：
+
+- `runtime_data/`
+
 ## 2. 当前公开接口
 
 公开头文件已经切换为：
@@ -97,8 +101,10 @@
 
 - 显示启动欢迎页
 - 执行 3 步启动检查
+- 启动时恢复 `runtime_data/` 下的上次链表/BST 数据
 - 进入菜单循环
 - 调用你原始 API 的真实交互
+- 正常退出前把当前链表/BST 数据随机打乱后再持久化写回本地
 - 展示统一 API 清单
 - 展示构建、测试和项目结构说明
 
@@ -141,14 +147,14 @@ make share
 
 当前策略是：
 
-- `listandtree/` 不存在时才新建并写入源码快照
+- `listandtree/` 不存在时才新建并写入公开头文件与 `liblistandtree.a`
 - `README.md` 不存在时才新建
 - 根目录 `Makefile` 不存在时才新建
 
 导出页会严格按 4 步执行并回报结果：
 
 1. 检查或创建导出目录
-2. 写出源码快照
+2. 写出分享库资源
 3. 写出 `README.md`
 4. 写出根目录 `Makefile`
 
@@ -156,13 +162,13 @@ make share
 
 构建分享版时，`tools/build_share_assets.py` 会：
 
-1. 读取 6 组公开头文件和 6 个实现文件
-2. 读取 `share/export_makefile` 与 `share/user_makefile`
+1. 先把 6 个实现文件编译并归档为 `liblistandtree.a`
+2. 读取 6 组公开头文件与 `share/user_makefile`
 3. 根据 `api_catalog.inc` 自动生成根目录 `README.md`
 4. 生成 `build/share_assets.c` / `build/share_assets.h`
 5. 编译进 `dist/listandtree.out`
 
-因此 `listandtree.out` 生成后就是一个固定快照。
+因此 `listandtree.out` 生成后就是一个固定的二进制分享快照，不包含源码。
 
 ## 8. 同名函数覆盖方案
 
@@ -188,6 +194,8 @@ make share
 - `tests/test_lists.c`
 - `tests/test_bst.c`
 - `tests/test_algorithms.c`
+- `tests/test_runtime_store.c`
+- `tests/test_share_export.sh`
 
 并新增了两个约束：
 
@@ -198,8 +206,8 @@ make share
 
 - `include/`: 原始 API 头文件、`listandtree.h`、`show.h`
 - `src/`: 开发版入口、分享版入口、显示层、六组实现、API 清单、私有导出宏头
-- `tests/`: 三组单元测试
-- `share/`: 导出库 Makefile 和用户根目录 Makefile 模板
+- `tests/`: 单元测试、持久化测试、分享导出验证
+- `share/`: 用户根目录 Makefile 模板
 - `tools/`: 分享资源打包脚本
 - `dist/`: 分享版输出目录
 
@@ -207,4 +215,4 @@ make share
 
 - 原始 API 版本的数据结构实验室
 - 分阶段快启的交互壳子
-- 可重复导出的源码快照分享版
+- 可重复导出的预编译库分享版

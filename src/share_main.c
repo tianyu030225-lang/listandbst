@@ -231,7 +231,7 @@ int main(void)
                         "导出失败",
                         "LIST and BST 分享版未能完成导出目录检查。");
         ui_show_message(stdout, UI_TONE_ERROR, error);
-        print_status_line("源码目录: ", export_dir_display);
+        print_status_line("分享目录: ", export_dir_display);
         print_status_line("README.md: ", readme_display);
         print_status_line("根 Makefile: ", makefile_display);
         return EXIT_FAILURE;
@@ -248,19 +248,19 @@ int main(void)
             ui_show_section(stdout,
                             NULL,
                             "导出失败",
-                            "LIST and BST 分享版未能完整写出源码快照。");
+                            "LIST and BST 分享版未能完整写出分享库资源。");
             ui_show_message(stdout, UI_TONE_ERROR, error);
-            print_status_line("源码目录: ", export_dir_display);
+            print_status_line("分享目录: ", export_dir_display);
             print_status_line("README.md: ", readme_display);
             print_status_line("根 Makefile: ", makefile_display);
             return EXIT_FAILURE;
         }
 
-        ui_streamf(stdout, UI_STREAM_QUICK, " [2/4] 源码快照已写出，共 %zu 个文件。\n", written_files);
+        ui_streamf(stdout, UI_STREAM_QUICK, " [2/4] 分享库资源已写出，共 %zu 个文件。\n", written_files);
     }
     else
     {
-        ui_show_message(stdout, UI_TONE_WARNING, "[2/4] 源码目录已存在，源码快照未改写。");
+        ui_show_message(stdout, UI_TONE_WARNING, "[2/4] 分享目录已存在，分享库资源未改写。");
     }
 
     if (!export_readme(EXPORT_README_NAME, &readme_created, error, sizeof(error)))
@@ -270,7 +270,7 @@ int main(void)
                         "导出失败",
                         "LIST and BST 分享版未能写出 README.md。");
         ui_show_message(stdout, UI_TONE_ERROR, error);
-        print_status_line("源码目录: ", export_dir_display);
+        print_status_line("分享目录: ", export_dir_display);
         print_status_line("README.md: ", readme_display);
         print_status_line("根 Makefile: ", makefile_display);
         return EXIT_FAILURE;
@@ -287,7 +287,7 @@ int main(void)
                         "导出失败",
                         "LIST and BST 分享版未能写出根 Makefile。");
         ui_show_message(stdout, UI_TONE_ERROR, error);
-        print_status_line("源码目录: ", export_dir_display);
+        print_status_line("分享目录: ", export_dir_display);
         print_status_line("README.md: ", readme_display);
         print_status_line("根 Makefile: ", makefile_display);
         return EXIT_FAILURE;
@@ -300,10 +300,10 @@ int main(void)
     ui_show_section(stdout,
                     NULL,
                     "导出完成",
-                    "LIST and BST 分享版已完成当前目录下的快照检查与写出。");
+                    "LIST and BST 分享版已完成当前目录下的分享库检查与写出。");
     ui_streamf(stdout, UI_STREAM_QUICK, " 共导出 %zu 个 API 函数\n", api_count);
     ui_streamf(stdout, UI_STREAM_QUICK, " 写出库文件: %zu 个\n", dir_created ? written_files : 0U);
-    print_status_line("源码目录: ", export_dir_display);
+    print_status_line("分享目录: ", export_dir_display);
     print_status_line("README.md: ", readme_display);
     print_status_line("根 Makefile: ", makefile_display);
     return EXIT_SUCCESS;

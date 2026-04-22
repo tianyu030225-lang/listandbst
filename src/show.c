@@ -806,7 +806,7 @@ void ui_show_export_intro(const char *author_email)
 {
     ui_show_intro_sequence(" 页面: 分享导出器   模式: 快照发布",
                            "正在校验分享版导出器",
-                           "正在装载源码快照资源",
+                           "正在装载分享库资源",
                            "正在整理 README 与构建脚本",
                            "分享版已就绪，加载动画已完成。",
                            NULL,

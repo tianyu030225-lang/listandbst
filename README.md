@@ -84,6 +84,7 @@ make share
 
 - 四种链表页面不再提前写死样本数据，而是由用户自己选择创建、头插、尾插、指定数据后插入、打印、查找、更新、删除、销毁
 - BST 页面不再提前构造固定树，而是由用户自己选择创建根节点、插入、查找、三种遍历、删除、销毁
+- 开发版启动时会自动读取 `runtime_data/` 下的上次数据；正常退出时会把 4 种链表和 BST 的数据随机打乱后再持久化回本地
 - 排序与查找页继续保留数组 API 演示，不受这次改动影响
 - `[0]` 退出
 
@@ -96,7 +97,7 @@ make share
 - 开发版动画完成后会停在 `按回车进入主菜单...`
 - 分享版欢迎页依次显示：
   `正在校验分享版导出器`、
-  `正在装载源码快照资源`、
+  `正在装载分享库资源`、
   `正在整理 README 与构建脚本`
 - 分享版动画结束后直接进入导出流程，不额外等待回车
 - 非 TTY 或 `LISTANDTREE_FAST_UI=1` 时直接走快速模式
@@ -113,9 +114,10 @@ make share
 
 其中：
 
-- `listandtree/` 是平铺的库源码目录
+- `listandtree/` 是平铺的公开头文件目录，并包含预编译静态库 `liblistandtree.a`
 - `README.md` 是自动生成的接口与使用说明
 - 根目录 `Makefile` 用于让用户写完自己的 `.c` 文件后直接 `make run`
+- 分享包不再释放任何 `.c` 源码；如需源码，请自行通过 Git 获取仓库副本
 
 如果当前目录里已经存在 `listandtree/`、`README.md` 或 `Makefile`，默认不会覆盖。
 
@@ -161,6 +163,8 @@ make SRC=demo.c OUT=demo run
 - `tests/test_lists.c`
 - `tests/test_bst.c`
 - `tests/test_algorithms.c`
+- `tests/test_runtime_store.c`
+- `tests/test_share_export.sh`
 
 覆盖内容包括：
 
@@ -173,14 +177,14 @@ make SRC=demo.c OUT=demo run
 
 - `include/`: 六组公开头文件、`listandtree.h`、`show.h`
 - `src/`: 开发版入口、分享版入口、显示层、六组实现、统一 API 清单
-- `tests/`: 链表、BST、排序与查找测试
-- `share/export_makefile`: 分享版导出的库 Makefile 模板
+- `tests/`: 链表、BST、排序与查找、持久化与分享导出验证
 - `share/user_makefile`: 分享版导出的根目录通用 Makefile 模板
-- `tools/build_share_assets.py`: 把源码、根 Makefile 和 README 打进分享版二进制
+- `tools/build_share_assets.py`: 把公开头文件、预编译静态库、根 Makefile 和 README 打进分享版二进制
 
 ## 说明
 
 - 默认目标平台是 Linux
 - `make` / `make run` 只操作开发版
 - `make share` 才会生成分享用的 `listandtree.out`
+- `make share-check` 会校验分享版导出目录不含源码且可正常链接 API
 - `README02.md` 记录当前版本的实现说明

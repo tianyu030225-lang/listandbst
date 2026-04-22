@@ -43,7 +43,7 @@ def render_readme(groups: list[tuple[str, str, str]], entries: list[tuple[str, s
         "",
         "## 已生成的内容",
         "",
-        "- `./listandtree/`: 平铺的头文件、源文件和库用 `Makefile`。",
+        "- `./listandtree/`: 平铺的公开头文件和预编译静态库 `liblistandtree.a`。",
         "- `./README.md`: 当前导出包的使用方式与 API 总览。",
         "- `./Makefile`: 根目录通用构建入口，用来编译当前目录下的用户 `.c` 文件。",
         "",
@@ -66,6 +66,11 @@ def render_readme(groups: list[tuple[str, str, str]], entries: list[tuple[str, s
         "```bash",
         "make SRC=demo.c OUT=demo run",
         "```",
+        "",
+        "## 源码说明",
+        "",
+        "- 当前分享包不包含任何 `.c` 源码。",
+        "- 如果你需要查看或拷贝源码，请自行通过 Git 获取仓库副本。",
         "",
         "## 同名函数覆盖说明",
         "",
@@ -121,21 +126,20 @@ def to_c_array(data: bytes) -> str:
 
 
 def main() -> int:
-    if len(sys.argv) != 3:
-        print("usage: build_share_assets.py <output.c> <output.h>", file=sys.stderr)
+    if len(sys.argv) != 4:
+        print("usage: build_share_assets.py <output.c> <output.h> <library.a>", file=sys.stderr)
         return 1
 
     root = Path(__file__).resolve().parents[1]
     output_c = Path(sys.argv[1])
     output_h = Path(sys.argv[2])
+    library_path = Path(sys.argv[3])
     catalog_path = root / "src" / "api_catalog.inc"
     groups, entries = parse_api_catalog(catalog_path)
     readme_content = render_readme(groups, entries).encode("utf-8")
     root_makefile_content = (root / "share" / "user_makefile").read_bytes()
 
     manifest = [
-        ("Makefile", root / "share" / "export_makefile"),
-        ("listandtree_export.h", root / "src" / "listandtree_export.h"),
         ("slist.h", root / "include" / "slist.h"),
         ("slist_while.h", root / "include" / "slist_while.h"),
         ("dlist.h", root / "include" / "dlist.h"),
@@ -143,12 +147,7 @@ def main() -> int:
         ("tree_bst.h", root / "include" / "tree_bst.h"),
         ("paixu_search.h", root / "include" / "paixu_search.h"),
         ("listandtree.h", root / "include" / "listandtree.h"),
-        ("slist.c", root / "src" / "slist.c"),
-        ("slist_while.c", root / "src" / "slist_while.c"),
-        ("dlist.c", root / "src" / "dlist.c"),
-        ("dlist_while.c", root / "src" / "dlist_while.c"),
-        ("tree_bst.c", root / "src" / "tree_bst.c"),
-        ("paixu_search.c", root / "src" / "paixu_search.c"),
+        ("liblistandtree.a", library_path),
     ]
 
     header_lines = [
