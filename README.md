@@ -22,6 +22,12 @@
 #include "listandtree.h"
 ```
 
+如果你是把整个仓库直接 `git clone` 到外部工程旁边使用，也可以在外部代码里写：
+
+```c
+#include "listandbst/listandtree.h"
+```
+
 它会一次性包含：
 
 - `slist.h`
@@ -176,6 +182,7 @@ make SRC=demo.c OUT=demo run
 ## 项目结构
 
 - `include/`: 六组公开头文件、`listandtree.h`、`show.h`
+- 仓库根目录 `listandtree.h`: 供外部项目通过 `#include "listandbst/listandtree.h"` 直接引用
 - `src/`: 开发版入口、分享版入口、显示层、六组实现、统一 API 清单
 - `tests/`: 链表、BST、排序与查找、持久化与分享导出验证
 - `share/user_makefile`: 分享版导出的根目录通用 Makefile 模板

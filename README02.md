@@ -28,6 +28,7 @@
 其中：
 
 - `listandtree.h` 只负责聚合包含这 6 组头文件
+- 仓库根目录额外提供一个转发头 `listandtree.h`，便于外部项目直接写 `#include "listandbst/listandtree.h"`
 - 所有接口都直接暴露节点指针或整型数组
 - 不再保留之前 4.0 那套容器对象式 API
 
